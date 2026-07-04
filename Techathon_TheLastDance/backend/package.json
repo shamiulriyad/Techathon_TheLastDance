@@ -1,0 +1,19 @@
+{
+  "name": "iot-office-monitoring-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified Express, Socket.IO, simulator, and Discord bot backend for the IoT office dashboard.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "cors": "^2.8.5",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
