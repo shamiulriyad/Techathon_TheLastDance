@@ -195,6 +195,8 @@ Setup steps (Developer Portal application, bot token, intents, invite link) are 
 
 ## Circuit Schematic (Wokwi)
 
+![Wokwi Circuit Diagram](WOKWI_circuit.png)
+
 **Live project:** [wokwi.com/projects/468547976515293185](https://wokwi.com/projects/468547976515293185)
 
 This is the representative hardware design for **one room (Work Room 1)** — a real ESP32 wired to relay-driven fans/lights, physical toggle buttons, and an analog current-sense input, matching what a real deployment would use to drive/sense the same 5 devices the simulator models for that room.
