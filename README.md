@@ -223,10 +223,10 @@ This is the representative hardware design for **one room (Work Room 1)** — a 
 
 > **TODO:** the formal high-level system diagram (device → simulator → backend → dashboard + bot → user) required by the spec is not yet added to the repo. Add the diagram image (drawn manually or with a non-Mermaid tool, per the spec's constraint) and reference it here, e.g.:
 >
-> ```markdown
-> ![Office IoT System Architecture Diagram](office_iot_system_diagram.png)
-> ```
->
+## System Diagram:
+
+![Office IoT System Architecture Diagram](office_iot_system_diagram.png)
+
 > The [Architecture](#architecture) section above and [`office_iot_system_diagram.png`](./office_iot_system_diagram.png) (internal planning sketch) describe the same data flow in the meantime.
 
 ## Alerts Logic
