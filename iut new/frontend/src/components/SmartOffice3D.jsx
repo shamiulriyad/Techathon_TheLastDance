@@ -1,29 +1,69 @@
 import { useMemo, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Edges, Grid, Html, OrbitControls } from '@react-three/drei'
-import { AdditiveBlending, MathUtils } from 'three'
+import { ContactShadows, Edges, Grid, Html, OrbitControls } from '@react-three/drei'
+import { AdditiveBlending } from 'three'
 import { ROOM_LAYOUTS, normalizeOfficeDevices } from '../data/officeDevices'
 
-const ROOM_NAMES = ROOM_LAYOUTS.map((room) => room.name)
+function SceneLabel({ position, fontSize = 11, color = '#e2e8f0', panel = false, children }) {
+  const resolvedFontSize = fontSize < 2 ? Math.max(10, Math.round(fontSize * 88)) : fontSize
 
-function SceneLabel({ position, rotation = [0, 0, 0], fontSize = 0.12, color = '#e2e8f0', children }) {
   return (
-    <Html position={position} rotation={rotation} transform center pointerEvents="none">
+    <Html position={position} center pointerEvents="none" zIndexRange={[30, 0]}>
       <span
         style={{
           color,
           fontFamily: '"JetBrains Mono", ui-monospace, monospace',
-          fontSize: `${Math.max(9, fontSize * 88)}px`,
+          fontSize: `${resolvedFontSize}px`,
           fontWeight: 700,
-          letterSpacing: '0.08em',
+          letterSpacing: '0.06em',
           lineHeight: 1,
-          textShadow: '0 0 12px rgba(34, 211, 238, 0.55)',
-          whiteSpace: 'nowrap'
+          textShadow: '0 0 10px rgba(2, 6, 23, 0.9)',
+          whiteSpace: 'nowrap',
+          background: panel ? 'rgba(2, 6, 23, 0.7)' : 'transparent',
+          border: panel ? '1px solid rgba(226, 232, 240, 0.16)' : 0,
+          borderRadius: panel ? '6px' : 0,
+          boxShadow: panel ? '0 8px 24px rgba(0, 0, 0, 0.22)' : 'none',
+          padding: panel ? '5px 8px' : 0
         }}
       >
         {children}
       </span>
     </Html>
+  )
+}
+
+function DeviceLabel({ device, position }) {
+  const label = device.type === 'Light' ? `${device.name} · ${device.cct}` : device.name
+
+  return (
+    <SceneLabel position={position} fontSize={11} color="#e5f7ff" panel>
+      {label}
+    </SceneLabel>
+  )
+}
+
+function FloorOutline({ width, depth, color }) {
+  const thickness = 0.035
+
+  return (
+    <group position={[0, 0.035, 0]}>
+      <mesh position={[0, 0, -depth / 2]}>
+        <boxGeometry args={[width, thickness, thickness]} />
+        <meshBasicMaterial color={color} transparent opacity={0.85} />
+      </mesh>
+      <mesh position={[0, 0, depth / 2]}>
+        <boxGeometry args={[width, thickness, thickness]} />
+        <meshBasicMaterial color={color} transparent opacity={0.85} />
+      </mesh>
+      <mesh position={[-width / 2, 0, 0]}>
+        <boxGeometry args={[thickness, thickness, depth]} />
+        <meshBasicMaterial color={color} transparent opacity={0.85} />
+      </mesh>
+      <mesh position={[width / 2, 0, 0]}>
+        <boxGeometry args={[thickness, thickness, depth]} />
+        <meshBasicMaterial color={color} transparent opacity={0.85} />
+      </mesh>
+    </group>
   )
 }
 
@@ -38,18 +78,11 @@ function RoomShell({ room }) {
         <boxGeometry args={[width, 0.08, depth]} />
         <meshStandardMaterial color="#d8c29d" roughness={0.42} metalness={0.08} />
       </mesh>
-
-      <Grid
-        args={[width, depth]}
-        position={[0, 0.012, 0]}
-        cellSize={0.5}
-        sectionSize={1}
-        cellColor="#8b7355"
-        sectionColor={room.color}
-        fadeDistance={8}
-        fadeStrength={0.8}
-        infiniteGrid={false}
-      />
+      <mesh receiveShadow position={[0, 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[width, depth]} />
+        <meshBasicMaterial color={room.color} transparent opacity={0.045} depthWrite={false} />
+      </mesh>
+      <FloorOutline width={width} depth={depth} color={room.color} />
 
       <mesh position={[0, wallY, -depth / 2]}>
         <boxGeometry args={[width, height, 0.08]} />
@@ -72,12 +105,12 @@ function RoomShell({ room }) {
       </mesh>
 
       <SceneLabel
-        position={[0, 0.07, depth / 2 - 0.45]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={0.18}
+        position={[0, 0.12, depth / 2 + 0.38]}
+        fontSize={12}
         color={room.color}
+        panel
       >
-        {room.display} {room.dimensions}
+        {room.name.toUpperCase()} {room.dimensions}
       </SceneLabel>
     </group>
   )
@@ -113,7 +146,7 @@ function SlidingDoor({ position, rotation = [0, 0, 0] }) {
         <boxGeometry args={[1.95, 0.06, 0.12]} />
         <meshStandardMaterial color="#94a3b8" metalness={0.8} roughness={0.18} />
       </mesh>
-      <SceneLabel position={[0, 2.38, 0]} fontSize={0.12} color="#67e8f9">
+      <SceneLabel position={[0, 2.38, 0]} fontSize={10} color="#67e8f9">
         AUTO SLIDE
       </SceneLabel>
     </group>
@@ -154,7 +187,7 @@ function Chair({ position, rotation = [0, 0, 0] }) {
         <boxGeometry args={[0.46, 0.62, 0.08]} />
         <meshStandardMaterial color="#1f2937" roughness={0.42} />
       </mesh>
-      <mesh position={[0, 0.18, 0]}>
+      <mesh castShadow position={[0, 0.18, 0]}>
         <cylinderGeometry args={[0.04, 0.04, 0.36, 18]} />
         <meshStandardMaterial color="#64748b" metalness={0.65} roughness={0.2} />
       </mesh>
@@ -173,7 +206,7 @@ function WallDisplay({ position, rotation = [0, 0, 0], label = '4K DISPLAY' }) {
         <boxGeometry args={[1.38, 0.02, 0.66]} />
         <meshBasicMaterial color="#0e7490" transparent opacity={0.72} />
       </mesh>
-      <SceneLabel position={[0, -0.07, 0.02]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.1} color="#cffafe">
+      <SceneLabel position={[0, -0.07, 0.02]} fontSize={10} color="#cffafe" panel>
         {label}
       </SceneLabel>
     </group>
@@ -214,7 +247,7 @@ function ConferenceTable() {
         <boxGeometry args={[0.72, 0.018, 0.38]} />
         <meshBasicMaterial color="#22d3ee" transparent opacity={0.55} />
       </mesh>
-      <SceneLabel position={[0, 0.59, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.09} color="#e0f2fe">
+      <SceneLabel position={[0, 0.72, 0]} fontSize={10} color="#e0f2fe">
         WIRELESS CHARGE
       </SceneLabel>
       <mesh position={[0, 0.22, 0]}>
@@ -222,10 +255,10 @@ function ConferenceTable() {
         <meshStandardMaterial color="#475569" metalness={0.55} roughness={0.28} />
       </mesh>
       {[-0.9, -0.3, 0.3, 0.9].map((x) => (
-        <Chair key={x} position={[x, 0, -0.9]} />
+        <Chair key={x} position={[x, 0, -0.9]} rotation={[0, Math.PI, 0]} />
       ))}
       {[-0.55, 0.55].map((x) => (
-        <Chair key={x} position={[x, 0, 0.9]} rotation={[0, Math.PI, 0]} />
+        <Chair key={x} position={[x, 0, 0.9]} />
       ))}
     </group>
   )
@@ -305,9 +338,9 @@ function WindowLight() {
 function LightDevice({ device, onToggle }) {
   const glowRef = useRef()
   const isOn = Boolean(device.isOn)
-  const warm = device.cct === '2700K'
+  const warm = device.cct === '3000K'
   const coreColor = warm ? '#fde68a' : '#bfdbfe'
-  const glowColor = isOn ? (warm ? '#fbbf24' : '#22d3ee') : '#334155'
+  const glowColor = isOn ? (warm ? '#f59e0b' : '#38bdf8') : '#475569'
 
   useFrame((state) => {
     if (!glowRef.current) return
@@ -316,18 +349,24 @@ function LightDevice({ device, onToggle }) {
 
   return (
     <group position={device.position} onClick={() => onToggle?.(device.id)}>
-      <mesh castShadow position={[0, 0.04, 0]}>
-        <cylinderGeometry args={[0.22, 0.26, 0.08, 40]} />
-        <meshStandardMaterial color="#f8fafc" metalness={0.35} roughness={0.18} emissive={glowColor} emissiveIntensity={isOn ? 0.8 : 0.08} />
+      <mesh position={[0, -0.055, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[isOn ? 0.82 : 0.42, 56]} />
+        <meshBasicMaterial color={coreColor} transparent opacity={isOn ? 0.2 : 0.05} blending={AdditiveBlending} depthWrite={false} />
       </mesh>
-      <mesh ref={glowRef} position={[0, -0.08, 0]}>
-        <sphereGeometry args={[0.28, 32, 32]} />
-        <meshBasicMaterial color={coreColor} transparent opacity={isOn ? 0.55 : 0.16} blending={AdditiveBlending} depthWrite={false} />
+      <mesh castShadow position={[0, 0.03, 0]}>
+        <cylinderGeometry args={[0.26, 0.3, 0.08, 48]} />
+        <meshStandardMaterial color="#e2e8f0" metalness={0.45} roughness={0.18} emissive={glowColor} emissiveIntensity={isOn ? 0.55 : 0.08} />
       </mesh>
-      {isOn && <pointLight color={coreColor} intensity={1.25} distance={4.8} decay={2.1} position={[0, -0.28, 0]} />}
-      <SceneLabel position={[0, -0.22, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.11} color="#e0f2fe">
-        {device.name} {device.cct}
-      </SceneLabel>
+      <mesh position={[0, -0.025, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.28, 0.018, 12, 48]} />
+        <meshBasicMaterial color={glowColor} transparent opacity={isOn ? 0.9 : 0.28} blending={AdditiveBlending} depthWrite={false} />
+      </mesh>
+      <mesh ref={glowRef} position={[0, -0.14, 0]}>
+        <sphereGeometry args={[0.42, 36, 36]} />
+        <meshBasicMaterial color={coreColor} transparent opacity={isOn ? 0.32 : 0.08} blending={AdditiveBlending} depthWrite={false} />
+      </mesh>
+      {isOn && <pointLight color={coreColor} intensity={1.35} distance={4.2} decay={2.2} position={[0, -0.42, 0]} />}
+      <DeviceLabel device={device} position={[0, -0.38, -0.52]} />
     </group>
   )
 }
@@ -343,13 +382,21 @@ function FanDevice({ device, onToggle }) {
 
   return (
     <group position={device.position} onClick={() => onToggle?.(device.id)}>
-      <mesh position={[0, 0.07, 0]}>
+      <mesh castShadow position={[0, 0.34, 0]}>
+        <cylinderGeometry args={[0.21, 0.21, 0.045, 36]} />
+        <meshStandardMaterial color="#e2e8f0" metalness={0.45} roughness={0.18} />
+      </mesh>
+      <mesh castShadow position={[0, 0.18, 0]}>
+        <cylinderGeometry args={[0.035, 0.035, 0.32, 18]} />
+        <meshStandardMaterial color="#94a3b8" metalness={0.65} roughness={0.18} />
+      </mesh>
+      <mesh castShadow position={[0, 0.07, 0]}>
         <cylinderGeometry args={[0.11, 0.14, 0.1, 32]} />
         <meshStandardMaterial color="#f8fafc" metalness={0.38} roughness={0.2} emissive="#0f766e" emissiveIntensity={isOn ? 0.35 : 0.05} />
       </mesh>
       <group ref={fanRef}>
         {[0, (Math.PI * 2) / 3, (Math.PI * 4) / 3].map((angle) => (
-          <mesh key={angle} rotation={[0, angle, 0]} position={[Math.sin(angle) * 0.28, 0, Math.cos(angle) * 0.28]}>
+          <mesh castShadow key={angle} rotation={[0, angle, 0]} position={[Math.sin(angle) * 0.28, 0, Math.cos(angle) * 0.28]}>
             <boxGeometry args={[0.16, 0.035, 0.78]} />
             <meshStandardMaterial color="#a66b3f" roughness={0.5} metalness={0.05} emissive="#164e63" emissiveIntensity={isOn ? 0.12 : 0} />
           </mesh>
@@ -359,43 +406,7 @@ function FanDevice({ device, onToggle }) {
         <sphereGeometry args={[0.48, 24, 24]} />
         <meshBasicMaterial color="#38bdf8" transparent opacity={isOn ? 0.18 : 0.04} blending={AdditiveBlending} depthWrite={false} />
       </mesh>
-      <SceneLabel position={[0, -0.3, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.11} color="#dbeafe">
-        {device.label}
-      </SceneLabel>
-    </group>
-  )
-}
-
-function HologramPanel({ position, title, value, rotation = [0, 0, 0] }) {
-  return (
-    <group position={position} rotation={rotation}>
-      <mesh>
-        <planeGeometry args={[1.75, 0.72]} />
-        <meshBasicMaterial color="#22d3ee" transparent opacity={0.14} blending={AdditiveBlending} depthWrite={false} />
-      </mesh>
-      <Edges color="#67e8f9" />
-      <SceneLabel position={[0, 0.14, 0.02]} fontSize={0.105} color="#cffafe">
-        {title}
-      </SceneLabel>
-      <SceneLabel position={[0, -0.12, 0.02]} fontSize={0.15} color="#22d3ee">
-        {value}
-      </SceneLabel>
-    </group>
-  )
-}
-
-function StatusRail({ devices, connectionState }) {
-  const activeCount = devices.filter((device) => device.isOn).length
-  const stateColor = connectionState === 'connected' ? '#22d3ee' : connectionState === 'reconnecting' ? '#facc15' : '#fb7185'
-
-  return (
-    <group position={[0.2, 3.25, -3.15]}>
-      <SceneLabel fontSize={0.25} color="#e0f2fe">
-        FUTURISTIC SMART OFFICE ARCHITECTURAL RENDER
-      </SceneLabel>
-      <SceneLabel position={[0, -0.32, 0]} fontSize={0.15} color={stateColor}>
-        {activeCount}/15 DEVICES ACTIVE | SIGNAL READY | {connectionState.toUpperCase()}
-      </SceneLabel>
+      <DeviceLabel device={device} position={[0, 0.48, 0.58]} />
     </group>
   )
 }
@@ -404,9 +415,9 @@ function Furniture() {
   return (
     <>
       <Desk position={[2.1, 0, -1.25]} />
-      <Chair position={[2.1, 0, -0.55]} rotation={[0, Math.PI, 0]} />
+      <Chair position={[2.1, 0, -0.55]} />
       <Desk position={[4.15, 0, -1.25]} />
-      <Chair position={[4.15, 0, -0.55]} rotation={[0, Math.PI, 0]} />
+      <Chair position={[4.15, 0, -0.55]} />
       <WallDisplay position={[3.05, 1.55, -2.54]} rotation={[Math.PI / 2, 0, 0]} />
       <Bookshelf />
 
@@ -432,21 +443,26 @@ function DeviceLayer({ devices, onToggle }) {
   )
 }
 
-function ArchitecturalOfficeScene({ deviceStates, connectionState, onToggle }) {
-  const devices = useMemo(() => normalizeOfficeDevices(deviceStates), [deviceStates])
-  const activeCount = devices.filter((device) => device.isOn).length
-
+function ArchitecturalOfficeScene({ devices, onToggle }) {
   return (
     <>
       <color attach="background" args={['#05070b']} />
       <fog attach="fog" args={['#05070b', 9, 22]} />
-      <ambientLight intensity={0.45} />
-      <directionalLight castShadow position={[-5, 8, 4]} intensity={1.6} color="#fff7ed" shadow-mapSize={[2048, 2048]} />
-      <directionalLight position={[6, 5, -4]} intensity={0.8} color="#67e8f9" />
-      <pointLight position={[-2.5, 2.4, 0]} intensity={1.5} color="#22d3ee" distance={8} />
-      <pointLight position={[4.6, 2.2, 3.6]} intensity={1} color="#fb7185" distance={6} />
+      <ambientLight intensity={0.34} />
+      <hemisphereLight args={['#dbeafe', '#172033', 0.62]} />
+      <directionalLight
+        castShadow
+        position={[-5.5, 8.5, 6.5]}
+        intensity={1.85}
+        color="#fff7ed"
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-left={-8}
+        shadow-camera-right={8}
+        shadow-camera-top={8}
+        shadow-camera-bottom={-8}
+      />
 
-      <group rotation={[0, -0.16, 0]}>
+      <group>
         {ROOM_LAYOUTS.map((room) => (
           <RoomShell key={room.key} room={room} />
         ))}
@@ -456,53 +472,61 @@ function ArchitecturalOfficeScene({ deviceStates, connectionState, onToggle }) {
         <SlidingDoor position={[3.22, 0, 1.48]} />
         <Furniture />
         <DeviceLayer devices={devices} onToggle={onToggle} />
-
-        <HologramPanel
-          position={[-2.5, 1.72, -0.05]}
-          rotation={[0, Math.PI / 10, 0]}
-          title="SMARTOFFICE HOLOGRAPHIC BLUEPRINT"
-          value={`${activeCount}/15 DEVICES ACTIVE`}
-        />
       </group>
 
       <Grid
-        args={[14, 10]}
-        position={[0, -0.08, 1.2]}
-        cellColor="#164e63"
-        sectionColor="#67e8f9"
+        args={[13.5, 10.5]}
+        position={[0.05, 0.014, 1.4]}
+        cellColor="#103441"
+        sectionColor="#1d6d7e"
         cellSize={0.5}
         sectionSize={2}
-        fadeDistance={18}
-        fadeStrength={1.35}
-        infiniteGrid
+        cellThickness={0.28}
+        sectionThickness={0.54}
+        fadeDistance={13}
+        fadeStrength={1.75}
+        infiniteGrid={false}
       />
-
-      <StatusRail devices={devices} connectionState={connectionState} />
+      <ContactShadows position={[0, 0.018, 1.2]} opacity={0.42} scale={14} blur={2.8} far={4.5} color="#020617" />
 
       <OrbitControls
         makeDefault
         enableDamping
         dampingFactor={0.08}
+        enablePan
+        enableRotate
+        enableZoom
         minDistance={6}
-        maxDistance={16}
-        maxPolarAngle={Math.PI / 2.08}
-        target={[0.4, 0.85, 0.9]}
+        maxDistance={15}
+        minPolarAngle={Math.PI / 4.5}
+        maxPolarAngle={Math.PI / 2.15}
+        target={[0.35, 0.7, 1.35]}
       />
     </>
   )
 }
 
 export default function SmartOffice3D({ deviceStates = [], connectionState = 'disconnected', onToggle }) {
+  const devices = useMemo(() => normalizeOfficeDevices(deviceStates), [deviceStates])
+  const activeCount = devices.filter((device) => device.isOn).length
+  const statusColor =
+    connectionState === 'connected' ? 'text-cyan-100' : connectionState === 'reconnecting' ? 'text-amber-100' : 'text-rose-100'
+
   return (
-    <Canvas
-      camera={{ position: [2.2, 7.4, 8.8], fov: 42 }}
-      gl={{ antialias: true, alpha: false }}
-      shadows
-      dpr={[1, 1.8]}
-    >
-      <ArchitecturalOfficeScene deviceStates={deviceStates} connectionState={connectionState} onToggle={onToggle} />
-    </Canvas>
+    <div className="relative h-full min-h-[520px] w-full overflow-hidden bg-[#05070b]">
+      <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex flex-col items-center gap-1 px-4 text-center font-mono uppercase tracking-[0.14em]">
+        <div className="text-[13px] font-semibold text-slate-100 sm:text-sm">Futuristic Smart Office Architectural Blueprint</div>
+        <div className="text-[11px] font-semibold text-cyan-200">{activeCount}/15 Devices Active</div>
+        <div className={`text-[11px] font-semibold ${statusColor}`}>{connectionState} / Signal Ready</div>
+      </div>
+      <Canvas
+        camera={{ position: [6.4, 7.2, 8.7], fov: 38 }}
+        gl={{ antialias: true, alpha: false }}
+        shadows
+        dpr={[1, 1.8]}
+      >
+        <ArchitecturalOfficeScene devices={devices} onToggle={onToggle} />
+      </Canvas>
+    </div>
   )
 }
-
-export { ROOM_NAMES }

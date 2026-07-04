@@ -2,17 +2,17 @@ export const ROOM_LAYOUTS = [
   {
     key: 'drawingroom',
     name: 'Drawing Room',
-    display: 'DRAWINGROOM',
-    dimensions: '6m x 5m',
+    display: 'DRAWING ROOM',
+    dimensions: '6m × 5m',
     center: [-2.5, 0, 0],
     size: [6, 2.7, 5],
-    color: '#14b8a6'
+    color: '#22d3ee'
   },
   {
     key: 'workroom1',
     name: 'Work Room 1',
-    display: 'WORKROOM1',
-    dimensions: '5m x 4m',
+    display: 'WORK ROOM 1',
+    dimensions: '5m × 4m',
     center: [3, 0, -0.5],
     size: [5, 2.7, 4],
     color: '#f59e0b'
@@ -20,11 +20,11 @@ export const ROOM_LAYOUTS = [
   {
     key: 'workroom2',
     name: 'Work Room 2',
-    display: 'WORKROOM2',
-    dimensions: '4m x 4m',
+    display: 'WORK ROOM 2',
+    dimensions: '4m × 4m',
     center: [3.5, 0, 3.5],
     size: [4, 2.7, 4],
-    color: '#38bdf8'
+    color: '#fb7185'
   }
 ]
 

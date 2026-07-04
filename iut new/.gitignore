@@ -1,7 +1,67 @@
+# Dependencies
 node_modules/
+**/node_modules/
+
+# Build output
 dist/
+**/dist/
+build/
+**/build/
+.vite/
+**/.vite/
+
+# Environment and secrets
 .env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# SQLite/runtime database files
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
 backend/office.db
 backend/office.db-shm
 backend/office.db-wal
+backend/office.db-journal
+
+# Legacy/runtime simulator state
 backend/office-state.json
+
+# Logs and diagnostics
+*.log
+logs/
+**/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test and coverage output
+coverage/
+**/coverage/
+.nyc_output/
+
+# Runtime caches
+.cache/
+**/.cache/
+.eslintcache
+.parcel-cache/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
