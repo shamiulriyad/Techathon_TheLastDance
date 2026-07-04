@@ -62,6 +62,8 @@ Both the REST API and the Discord bot call the exact same query functions in [`b
 - `server.js` wires up Express REST routes and a Socket.IO server, broadcasting `deviceUpdate` / `usageUpdate` / `alertsUpdate` on every simulator tick and on every manual toggle.
 - `bot.js` is a discord.js client that listens for commands and (optionally) proactively posts alerts to a Discord channel — see [Discord Bot](#discord-bot).
 
+![System Architecture Diagram](diagrams/office_iot_system_diagram.jpg)
+
 ## Repository Layout
 
 ```
