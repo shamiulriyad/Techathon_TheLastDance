@@ -62,7 +62,7 @@ Both the REST API and the Discord bot call the exact same query functions in [`b
 - `server.js` wires up Express REST routes and a Socket.IO server, broadcasting `deviceUpdate` / `usageUpdate` / `alertsUpdate` on every simulator tick and on every manual toggle.
 - `bot.js` is a discord.js client that listens for commands and (optionally) proactively posts alerts to a Discord channel — see [Discord Bot](#discord-bot).
 
-![Office IoT System Architecture Diagram](office_iot_system_diagram.png)
+
 
 ## Repository Layout
 
@@ -224,10 +224,10 @@ This is the representative hardware design for **one room (Work Room 1)** — a 
 > **TODO:** the formal high-level system diagram (device → simulator → backend → dashboard + bot → user) required by the spec is not yet added to the repo. Add the diagram image (drawn manually or with a non-Mermaid tool, per the spec's constraint) and reference it here, e.g.:
 >
 > ```markdown
-> ![System Diagram](./docs/system-diagram.png)
+> ![Office IoT System Architecture Diagram](office_iot_system_diagram.png)
 > ```
 >
-> The [Architecture](#architecture) section above and [`IUT_plan.png`](./IUT_plan.png) (internal planning sketch) describe the same data flow in the meantime.
+> The [Architecture](#architecture) section above and [`office_iot_system_diagram.png`](./office_iot_system_diagram.png) (internal planning sketch) describe the same data flow in the meantime.
 
 ## Alerts Logic
 
