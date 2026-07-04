@@ -35,6 +35,12 @@ A small office loses money because people leave lights and fans running after ho
 
 No physical hardware is required; device state is simulated but dynamic, and both interfaces must read from a single source of truth. Full requirements are in [`Hackathon Problem Statement (Preliminary Round) v1.2.pdf`](./Hackathon%20Problem%20Statement%20(Preliminary%20Round)%20v1.2.pdf); the team's internal planning notes are in [`IUT_plan.png`](./IUT_plan.png).
 
+
+
+### Dashboard Interface Preview
+
+![Frontend Overview Dashboard](frontend%20overview.png)
+
 ## Architecture
 
 ```
@@ -221,11 +227,13 @@ This is the representative hardware design for **one room (Work Room 1)** — a 
 
 > **TODO:** the formal high-level system diagram (device → simulator → backend → dashboard + bot → user) required by the spec is not yet added to the repo. Add the diagram image (drawn manually or with a non-Mermaid tool, per the spec's constraint) and reference it here, e.g.:
 >
-> ```markdown
-> ![System Diagram](./docs/system-diagram.png)
+
+## System Diagram
+
+![Office IoT System Architecture Diagram](office_iot_system_diagram.png)
 > ```
 >
-> The [Architecture](#architecture) section above and [`IUT_plan.png`](./IUT_plan.png) (internal planning sketch) describe the same data flow in the meantime.
+> The [Architecture](#architecture) section above and [`office_iot_system_diagram.png`](./office_iot_system_diagram.png) (internal planning sketch) describe the same data flow in the meantime.
 
 ## Alerts Logic
 
