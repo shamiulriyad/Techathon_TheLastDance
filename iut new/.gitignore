@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+backend/office.db
+backend/office.db-shm
+backend/office.db-wal
+backend/office-state.json
